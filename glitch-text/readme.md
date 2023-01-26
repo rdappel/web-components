@@ -6,7 +6,7 @@ a web component that's well... glitchy
 ## Demo
 [View the demo](https://ryan-appel.com/web-components/glitch-text/)
 
-## Features
+## Features 
 
 - Simple to use
 - Minified JS (2.12k)
