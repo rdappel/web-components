@@ -1,12 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>glitch-text examples</title>
+	<script src="glitch-text.js"></script>
+	<style>
+		body {
+			font-family: 'Courier New', Courier, monospace;
+			font-size: 1.2em;
+		}
+
+		div {
+			width: 60%;
+			margin: 10% auto;
+		}
+
+		h1 {
+			text-align: center;
+		}
+	</style>
 </head>
+
 <body>
-	<glitch-text>glitch-text</glitch-text>
+	<div>
+		<h1><glitch-text start ignore="-">glitch-text</glitch-text></h1>
+		<p><glitch-text>This is glitch-text. It's stopped by default. You can call element.start() to run it.</glitch-text></p>
+		<p><glitch-text start>This is glitch-text, but it contains the "start" attribute. That way it runs automatically.</glitch-text></p>
+		<p><glitch-text start speed="0.4">This is glitch-text with a faster speed (value between 0-1).</glitch-text></p>
+		<p><glitch-text start speed="0.02" glyphs="{}" duration="800">This one uses curly braces as glyphs. The
+				duration is also set to 800 (ms), so you can see the actual glyph before the character changes
+				back.</glitch-text></p>
+		<p><glitch-text start ignore="ABC, ">This one will leave the A, B, and C characters alone. Notice they never
+				change. (Also, commas and spaces are preserved.)</glitch-text></p>
+		<p><glitch-text start speed="0.7" drop="0.9">This one uses a "drop" of 0.9, meaning that it will drop frames 90%
+				of the time. This work well at high speeds to make the glitches feel more choppy.</glitch-text>
+	</div>
 </body>
+
 </html>
