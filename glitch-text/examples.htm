@@ -6,7 +6,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>glitch-text examples</title>
-	<script src="glitch-text.js"></script>
+	<script src="glitch-text.min.js"></script>
 	<style>
 		body {
 			font-family: 'Courier New', Courier, monospace;
@@ -27,8 +27,10 @@
 <body>
 	<div>
 		<h1><glitch-text start ignore="-">glitch-text</glitch-text></h1>
-		<p><glitch-text>This is glitch-text. It's stopped by default. You can call element.start() to run it.</glitch-text></p>
-		<p><glitch-text start>This is glitch-text, but it contains the "start" attribute. That way it runs automatically.</glitch-text></p>
+		<p><glitch-text>This is glitch-text. It's stopped by default. You can call element.start() to run
+				it.</glitch-text></p>
+		<p><glitch-text start>This is glitch-text, but it contains the "start" attribute. That way it runs
+				automatically.</glitch-text></p>
 		<p><glitch-text start speed="0.4">This is glitch-text with a faster speed (value between 0-1).</glitch-text></p>
 		<p><glitch-text start speed="0.02" glyphs="{}" duration="800">This one uses curly braces as glyphs. The
 				duration is also set to 800 (ms), so you can see the actual glyph before the character changes
