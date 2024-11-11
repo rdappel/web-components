@@ -18,9 +18,9 @@ a web component that's well... glitchy
 ```html
 <script src="glitch-text.js"></script>
 ```
-2. Use the <glitch-text> tag anywhere you want. (used here with the "run" attribute)
+2. Use the <glitch-text> tag anywhere you want. (used here with the "start" attribute)
 ```html
-<glitch-text run>This is glitchy a.f.</glitch-text>
+<glitch-text start>This is glitchy a.f.</glitch-text>
 ```
 
 ## API
@@ -38,7 +38,7 @@ a web component that's well... glitchy
 
 | Attribute | Type / Values (Default) | Example | Description |
 | ------ | ------ | ------ | ------ |
-| run | bool / none (default: false) | ```<glitch-text run>Hello world<glitch-text>``` | Will run the start function automatically when the element is mounted. **Note:** the attribute should not contain a value. Using run="some value" may cause unexpected behavior. |
+| start | bool / none (default: false) | ```<glitch-text start>Hello world<glitch-text>``` | Will run the start function automatically when the element is mounted. **Note:** the attribute should not contain a value. Using start="some value" may cause unexpected behavior. |
 | glyphs | string (default: "<>_\\/[]+^") | ```<glitch-text glyphs="][?">Hello world<glitch-text>``` | The characters in the specified string will be used to replace characters in the given glitch-text. In this example, the square brackets and the question mark will be the used to glitch the Hello world text. |
 | ignore | string (default: " ") | ```<glitch-text ignore=" []">[Hello world]<glitch-text>``` | Characters that will not be changed to glyphs while running. In this example, the characters in "Hello" and "world" will change, but the square brackets, and the space separating the words will stay unchanged |
 | speed | number / range between 0-1 (default: 0.05) | ```<glitch-text speed="0.15">Hello world<glitch-text>``` | A modifier for how fast characters in the text are changed to glyphs. A value of 1 would, in theory, change every character every second, making the text basically un-readable. 0.5 would be 50% of characters every second! Don't be surprised if you use numbers like 0.02 or smaller! The size of the string is accounted for when calculating the overall speed, so small glyph-text elements should look similar to large ones with the same speed |
@@ -48,7 +48,7 @@ a web component that's well... glitchy
 
 ### Properties
 
-You can change any attribute (except for "run"), by using the attribute name as a property. For example:
+You can change any attribute (except for "start"), by using the attribute name as a property. For example:
 ```js
 const glitchText = document.querySelector('glitch-text')
 glitchText.glyphs = "*"
