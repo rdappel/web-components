@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<script src="./aabb-projection-canvas.js" type="module"></script>
+	<link rel="icon" href="/favicon.svg" type="image/x-icon">
+	<style>
+
+		*,
+		*::before,
+		*::after {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+		}
+
+		.demo {
+			--demo-size: 540px;
+
+			display: block;
+			width: var(--demo-size);
+			height: var(--demo-size);
+			background-color: rgb(240, 240, 240);
+			border: 2px solid black;
+			margin: 12px;
+			border-radius: 30px;
+		}
+	</style>
+</head>
+
+<body>
+	<aabb-projection-canvas class="demo" />
+</body>
+
+<script>
+	const aabbProjectionCanvas = document.querySelector('aabb-projection-canvas')
+	// these are the default colors
+	// aabbProjectionCanvas.controlPointColor = 'rgb(136, 34, 34)'
+	// aabbProjectionCanvas.projectionLineColor = 'rgb(136, 34, 34)'
+	// aabbProjectionCanvas.rectangleColor = 'rgb(34, 34, 136)'
+	// aabbProjectionCanvas.halfWidthColor = 'rgb(34, 136, 34)'
+	// aabbProjectionCanvas.defaultLineColor = 'rgb(0, 0, 0)'
+
+</script>
+
+</html>
