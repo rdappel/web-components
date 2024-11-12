@@ -110,7 +110,8 @@ window.customElements.define('vector-projection-canvas', class extends HTMLEleme
 	draw() {
 		const {
 			context, p0, p1, p2,
-			lineColor, pointColor, projectionVectorColor,
+			lineColor, pointColor,
+			projectionVectorColor,
 			defaultLineColor, textColor
 		} = this
 
