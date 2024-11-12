@@ -72,7 +72,7 @@ window.customElements.define('voronoi-triangle-canvas', class extends HTMLElemen
 		const position = new Vector2(170, 170)
 		this.rectangle = new Rectangle(position, new Size2D(100, 80))
 
-		const controlPoint = new Point(new Vector2(150, 95), true)
+		const controlPoint = new Point(new Vector2(150, 95), 12)
 		this.controlPoint = controlPoint
 		this.draggablePoints.push(controlPoint)
 		
@@ -106,9 +106,7 @@ window.customElements.define('voronoi-triangle-canvas', class extends HTMLElemen
 	getMousePosition({ clientX, clientY }) {
 		const { x, y } = this.getBoundingClientRect()
 		const mousePosition = new Vector2(clientX - x, clientY - y)
-		mousePosition.x /= this.scale.x
-		mousePosition.y /= this.scale.y
-		return mousePosition
+		return mousePosition.divideByVector(this.scale)
 	}
 
 	addEventListeners() {
@@ -198,7 +196,7 @@ window.customElements.define('voronoi-triangle-canvas', class extends HTMLElemen
 
 		// draw control point
 		if (this.mouseOverPoint === controlPoint) {
-			controlPoint.draw(context, 'rgb(255, 255, 255, 0.75)', 'circle', 12)
+			controlPoint.draw(context, 'rgb(255, 255, 255, 0.75)', 'circle', controlPoint.draggableSize)
 		}
 
 		// draw closest point

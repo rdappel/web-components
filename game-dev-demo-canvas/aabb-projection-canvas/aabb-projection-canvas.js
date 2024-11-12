@@ -73,7 +73,7 @@ window.customElements.define('aabb-projection-canvas', class extends HTMLElement
 		const position = new Vector2(170, 170)
 		this.rectangle = new Rectangle(position, new Size2D(100, 80))
 
-		const controlPoint = new Point(new Vector2(170, 320), true)
+		const controlPoint = new Point(new Vector2(170, 320), 12)
 		this.controlPoint = controlPoint
 		this.draggablePoints.push(controlPoint)
 		
@@ -87,9 +87,7 @@ window.customElements.define('aabb-projection-canvas', class extends HTMLElement
 	getMousePosition({ clientX, clientY }) {
 		const { x, y } = this.getBoundingClientRect()
 		const mousePosition = new Vector2(clientX - x, clientY - y)
-		mousePosition.x /= this.scale.x
-		mousePosition.y /= this.scale.y
-		return mousePosition
+		return mousePosition.divideByVector(this.scale)
 	}
 
 	addEventListeners() {
@@ -130,7 +128,7 @@ window.customElements.define('aabb-projection-canvas', class extends HTMLElement
 
 	getMouseOverPoint(mousePosition) {
 		for (const point of this.draggablePoints) {
-			if (point.isMouseOver(mousePosition, 12)) return point
+			if (point.isMouseOver(mousePosition)) return point
 		}
 		return null
 	}

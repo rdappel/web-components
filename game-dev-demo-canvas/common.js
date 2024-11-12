@@ -6,6 +6,7 @@ class Vector2 {
 	subtract(vector) { return new Vector2(this.x - vector.x, this.y - vector.y) }
 	multiply(scalar) { return new Vector2(this.x * scalar, this.y * scalar) }
 	divide(scalar) { return new Vector2(this.x / scalar, this.y / scalar) }
+	divideByVector(vector) { return new Vector2(this.x / vector.x, this.y / vector.y) }
 	dot(vector) { return this.x * vector.x + this.y * vector.y }
 	lengthSquared() { return this.x * this.x + this.y * this.y }
 	length() { return Math.sqrt(this.lengthSquared()) }
@@ -19,7 +20,7 @@ class Vector2 {
 		context.beginPath()
 		context.moveTo(startPosition.x, startPosition.y)
 		context.lineTo(startPosition.x + x, startPosition.y + y) 
-		const headLength = 8
+		const headLength = 10
 		const angle = Math.atan2(y, x)
 		const piOver6 = Math.PI / 6
 		context.lineTo(
@@ -37,10 +38,14 @@ class Vector2 {
 		if (!vector) return false
 		return this.x === vector.x && this.y === vector.y
 	}
+	projectOnto(vector) {
+		const scalar = this.dot(vector) / vector.lengthSquared()
+		return vector.multiply(scalar)
+	}
 }
 
 class Point {
-	constructor(position, draggable = false) { this.position = position; this.draggable = draggable }
+	constructor(position, draggableSize = 0) { this.position = position; this.draggableSize = draggableSize }
 	draw(context, color, shape = 'square', size = 5) {
 		context.fillStyle = color
 		if (shape === 'circle') {
@@ -53,9 +58,10 @@ class Point {
 		}
 	}
 
-	isMouseOver(mousePosition, padding) {
-		if (!this.draggable || !mousePosition) return false
+	isMouseOver(mousePosition) {
+		if (!this.draggableSize || !mousePosition) return false
 		const { x, y } = this.position
+		const padding = this.draggableSize
 		return mousePosition.x > x - padding && mousePosition.x < x + padding &&
 			mousePosition.y > y - padding && mousePosition.y < y + padding
 	}
