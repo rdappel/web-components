@@ -36,7 +36,6 @@ window.customElements.define('voronoi-triangle-canvas', class extends HTMLElemen
 
 		this.selectedPoint = null
 		this.draggablePoints = []
-		this.closestPoint = new Vector2(129.13, 138.77)
 
 		this.draw = this.draw.bind(this)
         this.animationLoop = this.animationLoop.bind(this)
@@ -83,6 +82,7 @@ window.customElements.define('voronoi-triangle-canvas', class extends HTMLElemen
 			new Vector2(230, 185)
 		)
 		this.triangle = triangle
+		this.closestPoint = triangle.getClosestPoint(controlPoint.position)
 
 		// calculate exterior voronoi regions based on corner normals
 		const voronoiPoints = triangle.getEdges().reduce((acc, edge) => {
