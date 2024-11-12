@@ -59,6 +59,16 @@ window.customElements.define('aabb-projection-canvas', class extends HTMLElement
         requestAnimationFrame(this.animationLoop)
     }
 
+    animationLoop() {
+        const { context, canvas, scale } = this
+        context.clearRect(0, 0, canvas.width, canvas.height)
+		context.save()
+        context.scale(scale.x, scale.y)
+		this.draw()
+		context.restore()
+        requestAnimationFrame(this.animationLoop)
+    }
+
 	createCanvasElements() {
 		const position = new Vector2(170, 170)
 		this.rectangle = new Rectangle(position, new Size2D(100, 80))
@@ -75,7 +85,8 @@ window.customElements.define('aabb-projection-canvas', class extends HTMLElement
 	}
 
 	getMousePosition({ clientX, clientY }) {
-		const mousePosition = new Vector2(clientX, clientY)
+		const { x, y } = this.getBoundingClientRect()
+		const mousePosition = new Vector2(clientX - x, clientY - y)
 		mousePosition.x /= this.scale.x
 		mousePosition.y /= this.scale.y
 		return mousePosition
@@ -113,10 +124,7 @@ window.customElements.define('aabb-projection-canvas', class extends HTMLElement
 			canvas.style.cursor = this.mouseOverPoint ? 'pointer' : 'default'
 		})
 
-		canvas.addEventListener('mousedown', () => {
-			this.selectedPoint = this.mouseOverPoint
-		})
-
+		canvas.addEventListener('mousedown', () => this.selectedPoint = this.mouseOverPoint)
 		canvas.addEventListener('mouseup', () => this.selectedPoint = null)
 	}
 
@@ -126,23 +134,6 @@ window.customElements.define('aabb-projection-canvas', class extends HTMLElement
 		}
 		return null
 	}
-
-    disconnectedCallback() {
-        if (this.resizeObserver) {
-            this.resizeObserver.unobserve(this)
-            this.resizeObserver = null
-        }
-    }
-
-    animationLoop() {
-        const { context, canvas, scale } = this
-        context.clearRect(0, 0, canvas.width, canvas.height)
-		context.save()
-        context.scale(scale.x, scale.y)
-		this.draw()
-		context.restore()
-        requestAnimationFrame(this.animationLoop)
-    }
 
 	draw() {
 		const {

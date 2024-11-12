@@ -33,6 +33,10 @@ class Vector2 {
 		)
 		context.stroke()
 	}
+	equals(vector) {
+		if (!vector) return false
+		return this.x === vector.x && this.y === vector.y
+	}
 }
 
 class Point {
@@ -82,6 +86,7 @@ class LineSegment {
 		context.lineTo(this.end.x + x, this.end.y + y)
 		context.stroke()
 	}
+	toVector() { return this.end.subtract(this.start) }
 }
 
 class Size2D {
@@ -115,9 +120,71 @@ class Rectangle {
 	}
 }
 
+class Triangle {
+	constructor(a, b, c) { this.a = a; this.b = b; this.c = c }
+	draw(context, fillStyle, strokeStyle, lineWidth = 1) {
+		context.fillStyle = fillStyle
+		context.strokeStyle = strokeStyle
+		context.lineWidth = lineWidth
+		context.beginPath()
+		context.moveTo(this.a.x, this.a.y)
+		context.lineTo(this.b.x, this.b.y)
+		context.lineTo(this.c.x, this.c.y)
+		context.closePath()
+		context.fill()
+		context.stroke()
+	}
+	getCentroid() {
+		return new Vector2(
+			(this.a.x + this.b.x + this.c.x) / 3,
+			(this.a.y + this.b.y + this.c.y) / 3
+		)
+	}
+	getEdges() {
+		return [
+			new LineSegment(this.a, this.b),
+			new LineSegment(this.b, this.c),
+			new LineSegment(this.c, this.a)
+		]
+	}
+	getArea() {
+		const ab = this.b.subtract(this.a)
+		const ac = this.c.subtract(this.a)
+		return Math.abs(ab.x * ac.y - ab.y * ac.x) / 2
+	}
+	getSubTriangles(point) {
+		const p = point || this.getCentroid()
+		const ab = new Triangle(this.a, this.b, p)
+		const bc = new Triangle(this.b, this.c, p)
+		const ca = new Triangle(this.c, this.a, p)
+		return [ab, bc, ca]
+	}
+	isPointInside({ x, y }) {
+		const areas = this.getSubTriangles(new Vector2(x, y))
+			.reduce((acc, triangle) => triangle.getArea() + acc, 0)		
+		const area = this.getArea()
+		const delta = 0.001
+		return Math.abs(areas - area) < delta
+	}
+	getClosestPoint(point) {
+		const edges = this.getEdges()
+		const closestPoints = edges.map(edge => edge.getPointClosestTo(point))
+		const distances = closestPoints.map(closestPoint => closestPoint.subtract(point).length())
+		const minDistance = Math.min(...distances)
+		return closestPoints[distances.indexOf(minDistance)]
+	}
+	getClosestSide(point) {
+		const edges = this.getEdges()
+		const closestPoints = edges.map(edge => edge.getPointClosestTo(point))
+		const distances = closestPoints.map(closestPoint => closestPoint.subtract(point).length())
+		const minDistance = Math.min(...distances)
+		return edges[distances.indexOf(minDistance)]
+	}
+}
+
 function setColorAlpha(color, alpha) {
 	const [r, g, b] = color.match(/\d+/g)
 	return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-export { Vector2, Point, LineSegment, Size2D, Rectangle, setColorAlpha }
+export { Vector2, Point, LineSegment, Size2D, Rectangle, Triangle, setColorAlpha }
