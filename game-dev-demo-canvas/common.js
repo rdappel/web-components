@@ -182,9 +182,42 @@ class Triangle {
 	}
 }
 
+class Polygon {
+	constructor(points) { this.points = points }
+	draw(context, fillStyle, strokeStyle, lineWidth = 1) {
+		context.fillStyle = fillStyle
+		context.strokeStyle = strokeStyle
+		context.lineWidth = lineWidth
+		context.beginPath()
+		const [first, ...rest] = this.points
+		context.moveTo(first.x, first.y)
+		rest.forEach(point => context.lineTo(point.x, point.y))
+		context.closePath()
+		context.fill()
+		context.stroke()
+	}
+	isPointInside(point) {
+		const { x, y } = point
+		const { points } = this
+		const n = points.length
+		let isInside = false
+		for (let i = 0, j = n - 1; i < n; j = i++) {
+			const xi = points[i].x
+			const yi = points[i].y
+			const xj = points[j].x
+			const yj = points[j].y
+			const intersect = ((yi > y) !== (yj > y)) &&
+				(x < (xj - xi) * (y - yi) / (yj - yi) + xi)
+			if (intersect) isInside = !isInside
+		}
+		return isInside
+	}
+	getPoints() { return this.points }
+}
+
 function setColorAlpha(color, alpha) {
 	const [r, g, b] = color.match(/\d+/g)
 	return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-export { Vector2, Point, LineSegment, Size2D, Rectangle, Triangle, setColorAlpha }
+export { Vector2, Point, LineSegment, Size2D, Rectangle, Triangle, Polygon, setColorAlpha }

@@ -6,7 +6,8 @@ import {
 	setColorAlpha,
 	Size2D,
 	Rectangle,
-	Triangle
+	Triangle,
+	Polygon
 } from '../common.js'
 
 window.customElements.define('voronoi-triangle-canvas', class extends HTMLElement {
@@ -84,12 +85,21 @@ window.customElements.define('voronoi-triangle-canvas', class extends HTMLElemen
 		this.triangle = triangle
 
 		// calculate exterior voronoi regions based on corner normals
-		this.voronoiPoints = triangle.getEdges().reduce((acc, side) => {
-			const vector = side.toVector()
+		const voronoiPoints = triangle.getEdges().reduce((acc, edge) => {
+			const vector = edge.toVector()
 			const normal = new Vector2(-vector.y, vector.x).multiply(3)
-			const p0 = side.start.add(normal)
-			const p1 = side.end.add(normal) 
-			return [ ...acc, [ p0, p1 ] ]
+			const p0 = edge.start.add(normal)
+			const p1 = edge.end.add(normal)
+			return [ ...acc, { edge, p0, p1 } ]
+		}, [ ])
+
+		this.voronoiRegions = voronoiPoints.reduce((acc, { edge, p0, p1 }, index) => {
+			const { length } = voronoiPoints
+			const previousIndex = (index === 0 ? length : index) - 1
+			const previous = voronoiPoints[previousIndex]
+			const newTriangle = new Polygon([ edge.start, p0, previous.p1 ])
+			const newRectangle = new Polygon([ edge.start, edge.end, p1, p0 ])
+			return [ ...acc, newTriangle, newRectangle ]
 		}, [ ])
 	}
 
@@ -138,31 +148,25 @@ window.customElements.define('voronoi-triangle-canvas', class extends HTMLElemen
 		} = this
 
 		const isPointInTriangle = triangle.isPointInside(controlPoint.position)
-		
-		if(!isPointInTriangle) {
-			const closestPoint = triangle.getClosestPoint(controlPoint.position)
-			const closestSide = triangle.getClosestSide(controlPoint.position)
-			if (closestPoint.equals(closestSide.start) || closestPoint.equals(closestSide.end)) {
-				// closest point is a corner
-				// todo: color background of voronoi region
-			}
-			else {
-				// closest point is on side
-				// todo: color background of voronoi region
-			}
-		}
 
-		const outerLineColor = setColorAlpha(this.exteriorLineColor, 0.5)
-		this.voronoiPoints.forEach((voronoiRegion, index) => {
-			const side = triangle.getEdges()[index]
-			const [ p0, p1 ] = voronoiRegion
-			const line1 = new LineSegment(p0, p1)
-			const line2 = new LineSegment(side.start, p0)
-			const line3 = new LineSegment(side.end, p1)
-			line1.draw(context, outerLineColor, 1)
-			line2.draw(context, outerLineColor, 1)
-			line3.draw(context, outerLineColor, 1)
-		})
+		const outerLineColorNormal = setColorAlpha(this.exteriorLineColor, 0.5)
+		const selectedRegion = this.voronoiRegions.reduce((acc, region) => {
+			if (isPointInTriangle) {
+				region.draw(context, 'transparent', outerLineColorNormal)
+				return acc
+			}
+
+			const isControlPointInRegion = region.isPointInside(controlPoint.position)
+			if (!isControlPointInRegion) {
+				region.draw(context, 'transparent', outerLineColorNormal)
+				return acc
+			}
+
+			return region
+		}, null)
+
+		const selectedColor = setColorAlpha(voronoiRegionColor, 0.5)
+		if (selectedRegion) selectedRegion.draw(context, selectedColor, voronoiRegionColor)
 
 		const lineColor = setColorAlpha(defaultLineColor, 0.3)
 		if (isPointInTriangle) {
@@ -202,10 +206,6 @@ window.customElements.define('voronoi-triangle-canvas', class extends HTMLElemen
 		lineToClosest.draw(context, controlLineColor, 2)
 
 		controlPoint.draw(context, controlPointColor, 'square', 10)
-
-		// if (closestSide) {
-		// 	closestSide.draw(context, controlLineColor, 5)
-		// }
 
 	}
 })
