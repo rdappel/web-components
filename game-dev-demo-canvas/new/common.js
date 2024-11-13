@@ -95,14 +95,10 @@ class LineSegment {
 	toVector() { return this.end.subtract(this.start) }
 }
 
-class Size2D {
-	constructor(width, height) { this.width = width; this.height = height }
-}
-
 class Rectangle {
 	constructor(position, size) { this.position = position; this.size = size }
-	get halfWidth() { return this.size.width / 2 }
-	get halfHeight() { return this.size.height / 2 }
+	get halfWidth() { return this.size.x / 2 }
+	get halfHeight() { return this.size.y / 2 }
 	get left() { return this.position.x - this.halfWidth }
 	get right() { return this.position.x + this.halfWidth }
 	get top() { return this.position.y - this.halfHeight }
@@ -120,11 +116,35 @@ class Rectangle {
 		context.fillStyle = fillStyle
 		context.strokeStyle = strokeStyle
 		context.lineWidth = lineWidth
-		const { left, top, size: { width, height } } = this
-		context.fillRect(left, top, width, height)
-		context.strokeRect(left, top, width, height)
+		const { left, top, size: { x, y } } = this
+		context.fillRect(left, top, x, y)
+		context.strokeRect(left, top, x, y)
+	}
+	isPointInside({ x, y }) {
+		const { left, right, top, bottom } = this
+		return x > left() && x < right() && y > top() && y < bottom()
 	}
 }
+
+class Circle {
+	constructor(center, radius) { this.center = center; this.radius = radius }
+	draw(context, fillStyle, strokeStyle, lineWidth = 1) {
+		context.fillStyle = fillStyle
+		context.strokeStyle = strokeStyle
+		context.lineWidth = lineWidth
+		context.beginPath()
+		context.arc(this.center.x, this.center.y, this.radius, 0, 2 * Math.PI)
+		context.fill()
+		context.stroke()
+	}
+	isPointInside({ x, y }) {
+		const { center, radius } = this
+		const dx = x - center.x
+		const dy = y - center.y
+		return dx ** 2 + dy ** 2 < radius * radius
+	}
+}
+
 
 class Triangle {
 	constructor(a, b, c) { this.a = a; this.b = b; this.c = c }
@@ -226,4 +246,4 @@ function setColorAlpha(color, alpha) {
 	return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-export { Vector2, Point, LineSegment, Size2D, Rectangle, Triangle, Polygon, setColorAlpha }
+export { Vector2, Point, LineSegment, Rectangle, Circle, Triangle, Polygon, setColorAlpha }

@@ -4,7 +4,6 @@ import {
 	Point,
 	LineSegment,
 	setColorAlpha,
-	Size2D,
 	Rectangle,
 	Triangle,
 	Polygon
@@ -70,7 +69,7 @@ window.customElements.define('voronoi-triangle-canvas', class extends HTMLElemen
 
 	createCanvasElements() {
 		const position = new Vector2(170, 170)
-		this.rectangle = new Rectangle(position, new Size2D(100, 80))
+		this.rectangle = new Rectangle(position, new Vector2(100, 80))
 
 		const controlPoint = new Point(new Vector2(150, 95), 12)
 		this.controlPoint = controlPoint

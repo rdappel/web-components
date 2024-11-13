@@ -4,7 +4,6 @@ import {
 	Point,
 	LineSegment,
 	setColorAlpha,
-	Size2D,
 	Rectangle
 } from '../common.js'
 
@@ -71,7 +70,7 @@ window.customElements.define('aabb-projection-canvas', class extends HTMLElement
 
 	createCanvasElements() {
 		const position = new Vector2(170, 170)
-		this.rectangle = new Rectangle(position, new Size2D(100, 80))
+		this.rectangle = new Rectangle(position, new Vector2(100, 80))
 
 		const controlPoint = new Point(new Vector2(170, 320), 12)
 		this.controlPoint = controlPoint

@@ -4,7 +4,6 @@ import {
 	Point,
 	LineSegment,
 	setColorAlpha,
-	Size2D,
 	Rectangle,
 	Triangle,
 	Polygon

@@ -4,11 +4,7 @@ import {
 	Point,
 	LineSegment,
 	setColorAlpha,
-	Size2D,
-	Rectangle,
-	Triangle,
-	Polygon
-} from '../common.js'
+} from '../new/common.js'
 
 window.customElements.define('particle-collision-canvas', class extends HTMLElement {
 
@@ -28,9 +24,12 @@ window.customElements.define('particle-collision-canvas', class extends HTMLElem
         this.context = this.canvas.getContext('2d')
 
 		// todo: specify colors... ex:
-		//this.controlPointColor = this.controlPointColor || 'rgb(34, 34, 136)'
         this.frictionSliderColor = 'rgb(136, 34, 34)'
         this.bounceSliderColor = 'rgb(34, 34, 136)'
+		this.defaultLineColor = 'rgb(0, 0, 0, 0.3)'
+		this.bounceVectorColor = 'rgb(34, 136, 34)'
+		this.frictionVectorColor = 'rgb(136, 34, 34)'
+		this.fallVectorColor = 'rgb(34, 34, 136)'
 
         this.textColor = this.textColor || 'rgb(0, 0, 0)'
 
@@ -84,6 +83,17 @@ window.customElements.define('particle-collision-canvas', class extends HTMLElem
         this.bounceSliderPoint = new Point(bounceStart.add(bounceEnd).divide(2), 12)
 
         this.draggablePoints.push(this.frictionSliderPoint, this.bounceSliderPoint)
+
+		this.bounceVector = new Vector2(130, 160)
+		this.bounceStartVector = new Vector2(40, 70)
+
+		this.friction = 0.5
+		this.bounce = 0.5
+
+		this.floorY = 230
+		this.floorP0 = new Vector2(-100, this.floorY)
+		this.floorP1 = new Vector2(440, this.floorY)
+		this.floorLine = new LineSegment(this.floorP0, this.floorP1)
 	}
 
 	getMousePosition({ clientX, clientY }) {
@@ -102,9 +112,13 @@ window.customElements.define('particle-collision-canvas', class extends HTMLElem
 				sp.position = mousePosition
                 if (sp === this.frictionSliderPoint) {
                     sp.position = this.frictionSliderLine.getPointClosestTo(sp.position)
+					this.friction = (sp.position.x - this.frictionSliderLine.start.x) ** 2
+						/ this.frictionSliderLine.toVector().lengthSquared()
                 }
                 if (sp === this.bounceSliderPoint) {
                     sp.position = this.bounceSliderLine.getPointClosestTo(sp.position)
+					this.bounce = (sp.position.x - this.bounceSliderLine.start.x) ** 2
+						/ this.bounceSliderLine.toVector().lengthSquared()
                 }
 				return
 			}
@@ -127,9 +141,11 @@ window.customElements.define('particle-collision-canvas', class extends HTMLElem
 
 	draw() {
 		const {
-			context, textColor,
+			context, textColor, defaultLineColor,
             frictionSliderPoint, frictionSliderLine, frictionSliderColor,
             bounceSliderPoint, bounceSliderLine, bounceSliderColor,
+			bounceVectorColor, bounceVector, bounceStartVector, floorLine,
+			fallVectorColor, frictionVectorColor
 		} = this
 
         const highlightPoint = this.selectedPoint || this.mouseOverPoint
@@ -151,6 +167,27 @@ window.customElements.define('particle-collision-canvas', class extends HTMLElem
 		const frictionPosition = frictionSliderPoint.position.add(textOffset)
 		context.fillText('bounce', bouncePosition.x, bouncePosition.y)
 		context.fillText('friction', frictionPosition.x, frictionPosition.y)
+
+		floorLine.draw(context, defaultLineColor)
+		const floorVector = floorLine.toVector()
+
+		const fallColor = setColorAlpha(fallVectorColor, 0.5)
+		const frictionColor = setColorAlpha(frictionVectorColor, 0.5)
+		bounceVector.draw(context, bounceStartVector, bounceVectorColor)
+		const fallVector = bounceVector.projectOnto(floorVector.right())
+		fallVector.draw(context, bounceStartVector, fallColor)
+		const frictionVectorStart = bounceStartVector.add(fallVector)
+		const frictionVector = bounceVector.projectOnto(floorVector)
+		frictionVector.draw(context, frictionVectorStart, frictionColor)
+		const inverseFriction = 1 - this.friction
+		const bounceVectorEnd = bounceStartVector.add(bounceVector)
+		const appliedFrictionVector = frictionVector.multiply(inverseFriction)
+		appliedFrictionVector.draw(context, bounceVectorEnd, frictionColor)
+		const frictionVectorEnd = bounceVectorEnd.add(appliedFrictionVector)
+		const appliedBounceVector = fallVector.multiply(-this.bounce)
+		appliedBounceVector.draw(context, frictionVectorEnd, fallColor)
+		const reboundVector = appliedFrictionVector.add(appliedBounceVector)
+		reboundVector.draw(context, bounceVectorEnd, bounceVectorColor)
 
 	}
 })

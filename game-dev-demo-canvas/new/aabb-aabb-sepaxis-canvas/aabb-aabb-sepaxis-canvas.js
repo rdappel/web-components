@@ -9,7 +9,7 @@ import {
 	Polygon
 } from '../common.js'
 
-window.customElements.define('TODO-ENTER_NAME_OF_ELEMENT', class extends HTMLElement {
+window.customElements.define('aabb-aabb-sepaxis-canvas', class extends HTMLElement {
 
     constructor() {
         super()
@@ -27,10 +27,11 @@ window.customElements.define('TODO-ENTER_NAME_OF_ELEMENT', class extends HTMLEle
         this.context = this.canvas.getContext('2d')
 
 		// todo: specify colors... ex:
-		//this.controlPointColor = this.controlPointColor || 'rgb(34, 34, 136)'
+		this.axisLineColor = this.axisLineColor || 'rgb(34, 136, 34)'
 
-		this.selectedPoint = null
-		this.draggablePoints = []
+		this.axisDistanceFromEdge = 24
+
+		this.selectedObject = null
 
 		this.draw = this.draw.bind(this)
         this.animationLoop = this.animationLoop.bind(this)
@@ -63,7 +64,16 @@ window.customElements.define('TODO-ENTER_NAME_OF_ELEMENT', class extends HTMLEle
     }
 
 	createCanvasElements() {
-		
+		const { defaultSize, axisDistanceFromEdge } = this
+
+		this.xAxisLine = new LineSegment(
+			new Vector2(0, defaultSize.y - axisDistanceFromEdge),
+			new Vector2(defaultSize.x, defaultSize.y - axisDistanceFromEdge)
+		)
+		this.yAxisLine = new LineSegment(
+			new Vector2(axisDistanceFromEdge, 0),
+			new Vector2(axisDistanceFromEdge, defaultSize.y)
+		)
 	}
 
 	getMousePosition({ clientX, clientY }) {
@@ -83,7 +93,6 @@ window.customElements.define('TODO-ENTER_NAME_OF_ELEMENT', class extends HTMLEle
 				return
 			}
 
-			this.mouseOverPoint = this.getMouseOverPoint(mousePosition)
 			canvas.style.cursor = this.mouseOverPoint ? 'pointer' : 'default'
 		})
 
@@ -92,18 +101,15 @@ window.customElements.define('TODO-ENTER_NAME_OF_ELEMENT', class extends HTMLEle
         canvas.addEventListener('mouseleave', () => this.selectedPoint = null)
 	}
 
-	getMouseOverPoint(mousePosition) {
-		for (const point of this.draggablePoints) {
-			if (point.isMouseOver(mousePosition)) return point
-		}
-		return null
-	}
 
 	draw() {
 		const {
-			context
+			context,
+			axisLineColor, xAxisLine, yAxisLine
 		} = this
 
-
+		const axisLineColor50 = setColorAlpha(axisLineColor, 0.5)
+		xAxisLine.draw(context, axisLineColor50)
+		yAxisLine.draw(context, axisLineColor50)
 	}
 })
