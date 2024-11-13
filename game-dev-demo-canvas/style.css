@@ -1,3 +1,8 @@
+/*
+future reference:
+https://css-tricks.com/styling-a-web-component/
+*/
+
 *,
 *::before,
 *::after {
@@ -19,7 +24,7 @@ body {
 	background-color: rgb(240, 240, 240);
 	margin: 50px;
 	/* border-radius: 30px;
-			border: 2px solid black; */
+	border: 2px solid black; */
 }
 
 a {

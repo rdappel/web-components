@@ -10,7 +10,7 @@ import {
 	Polygon
 } from '../common.js'
 
-window.customElements.define('TODO-ENTER_NAME_OF_ELEMENT', class extends HTMLElement {
+window.customElements.define('particle-collision-canvas', class extends HTMLElement {
 
     constructor() {
         super()
@@ -29,6 +29,10 @@ window.customElements.define('TODO-ENTER_NAME_OF_ELEMENT', class extends HTMLEle
 
 		// todo: specify colors... ex:
 		//this.controlPointColor = this.controlPointColor || 'rgb(34, 34, 136)'
+        this.frictionSliderColor = 'rgb(136, 34, 34)'
+        this.bounceSliderColor = 'rgb(34, 34, 136)'
+
+        this.textColor = this.textColor || 'rgb(0, 0, 0)'
 
 		this.selectedPoint = null
 		this.draggablePoints = []
@@ -64,7 +68,22 @@ window.customElements.define('TODO-ENTER_NAME_OF_ELEMENT', class extends HTMLEle
     }
 
 	createCanvasElements() {
-		
+        const minX = 20
+        const maxX = 320
+
+        const frictionY = 290
+        const frictionStart = new Vector2(minX, frictionY)
+        const frictionEnd = new Vector2(maxX, frictionY)
+        this.frictionSliderLine = new LineSegment(frictionStart, frictionEnd)
+        this.frictionSliderPoint = new Point(frictionStart.add(frictionEnd).divide(2), 12)
+
+        const bounceY = 320
+        const bounceStart = new Vector2(minX, bounceY)
+        const bounceEnd = new Vector2(maxX, bounceY)
+		this.bounceSliderLine = new LineSegment(bounceStart, bounceEnd)
+        this.bounceSliderPoint = new Point(bounceStart.add(bounceEnd).divide(2), 12)
+
+        this.draggablePoints.push(this.frictionSliderPoint, this.bounceSliderPoint)
 	}
 
 	getMousePosition({ clientX, clientY }) {
@@ -78,9 +97,15 @@ window.customElements.define('TODO-ENTER_NAME_OF_ELEMENT', class extends HTMLEle
 
 		canvas.addEventListener('mousemove', event => {
 			const mousePosition = this.getMousePosition(event)
-
-			if (this.selectedPoint) {
-				this.selectedPoint.position = mousePosition
+            const sp = this.selectedPoint
+			if (sp) {
+				sp.position = mousePosition
+                if (sp === this.frictionSliderPoint) {
+                    sp.position = this.frictionSliderLine.getPointClosestTo(sp.position)
+                }
+                if (sp === this.bounceSliderPoint) {
+                    sp.position = this.bounceSliderLine.getPointClosestTo(sp.position)
+                }
 				return
 			}
 
@@ -102,9 +127,30 @@ window.customElements.define('TODO-ENTER_NAME_OF_ELEMENT', class extends HTMLEle
 
 	draw() {
 		const {
-			context
+			context, textColor,
+            frictionSliderPoint, frictionSliderLine, frictionSliderColor,
+            bounceSliderPoint, bounceSliderLine, bounceSliderColor,
 		} = this
 
+        const highlightPoint = this.selectedPoint || this.mouseOverPoint
+		if (highlightPoint) {
+			const size = highlightPoint.draggableSize
+			highlightPoint.draw(context, 'white', 'circle', size)
+		}
+
+        bounceSliderLine.draw(context, bounceSliderColor, 2)
+        bounceSliderPoint.draw(context, bounceSliderColor, 'square', 10)
+
+        frictionSliderLine.draw(context, frictionSliderColor, 2)
+        frictionSliderPoint.draw(context, frictionSliderColor, 'square', 10)
+
+		context.font = '12px Tahoma'
+		context.fillStyle = textColor
+		const textOffset = new Vector2(12, -12)
+		const bouncePosition = bounceSliderPoint.position.add(textOffset)
+		const frictionPosition = frictionSliderPoint.position.add(textOffset)
+		context.fillText('bounce', bouncePosition.x, bouncePosition.y)
+		context.fillText('friction', frictionPosition.x, frictionPosition.y)
 
 	}
 })

@@ -124,6 +124,7 @@ window.customElements.define('aabb-projection-canvas', class extends HTMLElement
 
 		canvas.addEventListener('mousedown', () => this.selectedPoint = this.mouseOverPoint)
 		canvas.addEventListener('mouseup', () => this.selectedPoint = null)
+        canvas.addEventListener('mouseleave', () => this.selectedPoint = null)
 	}
 
 	getMouseOverPoint(mousePosition) {

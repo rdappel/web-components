@@ -127,11 +127,12 @@ window.customElements.define('voronoi-triangle-canvas', class extends HTMLElemen
 
 		canvas.addEventListener('mousedown', () => this.selectedPoint = this.mouseOverPoint)
 		canvas.addEventListener('mouseup', () => this.selectedPoint = null)
+        canvas.addEventListener('mouseleave', () => this.selectedPoint = null)
 	}
 
 	getMouseOverPoint(mousePosition) {
 		for (const point of this.draggablePoints) {
-			if (point.isMouseOver(mousePosition, 12)) return point
+			if (point.isMouseOver(mousePosition)) return point
 		}
 		return null
 	}

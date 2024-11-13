@@ -98,11 +98,12 @@ window.customElements.define('vector-projection-canvas', class extends HTMLEleme
 
 		canvas.addEventListener('mousedown', () => this.selectedPoint = this.mouseOverPoint)
 		canvas.addEventListener('mouseup', () => this.selectedPoint = null)
+        canvas.addEventListener('mouseleave', () => this.selectedPoint = null)
 	}
 
 	getMouseOverPoint(mousePosition) {
 		for (const point of this.draggablePoints) {
-			if (point.isMouseOver(mousePosition, 12)) return point
+			if (point.isMouseOver(mousePosition)) return point
 		}
 		return null
 	}
@@ -115,7 +116,12 @@ window.customElements.define('vector-projection-canvas', class extends HTMLEleme
 			defaultLineColor, textColor
 		} = this
 
-		const textOffset = new Vector2(12, -12)
+		const highlightPoint = this.selectedPoint || this.mouseOverPoint
+
+		if (highlightPoint) {
+			const size = highlightPoint.draggableSize
+			highlightPoint.draw(context, 'white', 'circle', size)
+		}
 
 		const lineColor50 = setColorAlpha(lineColor, 0.5)
 		const line = (new LineSegment(p1.position, p2.position)).extend(340)
@@ -152,8 +158,9 @@ window.customElements.define('vector-projection-canvas', class extends HTMLEleme
 		p2.draw(context, lineColor, 'square', 10)
 		p0.draw(context, pointColor, 'square', 10)
 
-		context.font = '12px sans-serif'
+		context.font = '12px Tahoma'
 		context.fillStyle = textColor
+		const textOffset = new Vector2(12, -12)
 		const p0textPosition = p0.position.add(textOffset)
 		const p1textPosition = p1.position.add(textOffset)
 		const p2textPosition = p2.position.add(textOffset)
