@@ -147,11 +147,11 @@ window.customElements.define('aabb-projection-canvas', class extends HTMLElement
 		rectangle.draw(context, rectangleFillColor, rectangleColor)
 
 		// draw control point and projection line with right angle box
-		const directionHalf = controlPoint.position.subtract(rectangle.center)
-		const closestToCenter = projectionLine.getPointClosestTo(rectangle.center)
+		const directionHalf = controlPoint.position.subtract(rectangle.position)
+		const closestToCenter = projectionLine.getPointClosestTo(rectangle.position)
 		const point = new Point(closestToCenter)
 		const lineColor = setColorAlpha(defaultLineColor, 0.3)
-		const lineToCenter = new LineSegment(rectangle.center, point.position)
+		const lineToCenter = new LineSegment(rectangle.position, point.position)
 		lineToCenter.draw(context, lineColor)
 		const boxSize = this.RIGHT_ANGLE_BOX_SIZE
 		const normal = directionHalf.normalize()
@@ -168,14 +168,14 @@ window.customElements.define('aabb-projection-canvas', class extends HTMLElement
 
 		// draw half width vectors and half width projection lines
 		const horizontalEdge = directionHalf.x >= 0 ? rectangle.rightEdge : rectangle.leftEdge
-		const horizontalPoint = horizontalEdge.getPointClosestTo(rectangle.center)
-		const horizontalVector = horizontalPoint.subtract(rectangle.center)
-		horizontalVector.draw(context, rectangle.center, rectangleColor)
+		const horizontalPoint = horizontalEdge.getPointClosestTo(rectangle.position)
+		const horizontalVector = horizontalPoint.subtract(rectangle.position)
+		horizontalVector.draw(context, rectangle.position, rectangleColor)
 
 		const verticalEdge = directionHalf.y >= 0 ? rectangle.bottomEdge : rectangle.topEdge
-		const verticalPoint = verticalEdge.getPointClosestTo(rectangle.center)
-		const verticalVector = verticalPoint.subtract(rectangle.center)
-		verticalVector.draw(context, rectangle.center, rectangleColor)
+		const verticalPoint = verticalEdge.getPointClosestTo(rectangle.position)
+		const verticalVector = verticalPoint.subtract(rectangle.position)
+		verticalVector.draw(context, rectangle.position, rectangleColor)
 
 		const halfWidthLineColor = setColorAlpha(halfWidthColor, 0.5)
 		const closestHorizontal = projectionLine.getPointClosestTo(horizontalPoint)
@@ -188,10 +188,10 @@ window.customElements.define('aabb-projection-canvas', class extends HTMLElement
 		halfWidthProjection.draw(context, halfWidthColor, 3, normal.multiply(12))
 
 		// draw full corner projection lines
-		const corner1 = rectangle.center.add(horizontalVector).add(verticalVector.multiply(-1))
+		const corner1 = rectangle.position.add(horizontalVector).add(verticalVector.multiply(-1))
 		const corner1Projection = projectionLine.getPointClosestTo(corner1)
 		const corner1Line = new LineSegment(corner1, corner1Projection)
-		const corner2 = rectangle.center.add(horizontalVector.multiply(-1)).add(verticalVector)
+		const corner2 = rectangle.position.add(horizontalVector.multiply(-1)).add(verticalVector)
 		const corner2Projection = projectionLine.getPointClosestTo(corner2)
 		const corner2Line = new LineSegment(corner2, corner2Projection)
 		const fullWidthProjection = new LineSegment(corner1Projection, corner2Projection)

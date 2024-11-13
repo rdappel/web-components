@@ -4,7 +4,7 @@ import {
 	Point,
 	LineSegment,
 	setColorAlpha,
-} from '../new/common.js'
+} from '../common.js'
 
 window.customElements.define('particle-collision-canvas', class extends HTMLElement {
 

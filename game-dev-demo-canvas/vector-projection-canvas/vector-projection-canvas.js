@@ -87,7 +87,6 @@ window.customElements.define('vector-projection-canvas', class extends HTMLEleme
 
 			if (this.selectedPoint) {
 				this.selectedPoint.position = mousePosition
-				console.log(this.selectedPoint.position)
 				return
 			}
 

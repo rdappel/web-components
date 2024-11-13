@@ -69,9 +69,9 @@ class Point {
 
 class LineSegment {
 	constructor(start, end) { this.start = start; this.end = end }
-	getPointClosestTo(point) {
-		const startToPoint = point.subtract(this.start)
+	getPointClosestTo({ x, y }) {
 		const startToEnd = this.end.subtract(this.start)
+		const startToPoint = new Vector2(x, y).subtract(this.start)
 		const t = startToPoint.dot(startToEnd) / startToEnd.lengthSquared()
 		if (t < 0) return this.start
 		if (t > 1) return this.end
@@ -107,11 +107,11 @@ class Rectangle {
 	get topRight() { return new Vector2(this.right, this.top) }
 	get bottomLeft() { return new Vector2(this.left, this.bottom) }
 	get bottomRight() { return new Vector2(this.right, this.bottom) }
-	get center() { return this.position }
 	get leftEdge() { return new LineSegment(this.topLeft, this.bottomLeft) }
 	get rightEdge() { return new LineSegment(this.topRight, this.bottomRight) }
 	get topEdge() { return new LineSegment(this.topLeft, this.topRight) }
 	get bottomEdge() { return new LineSegment(this.bottomLeft, this.bottomRight) }
+	get corners() { return [this.topLeft, this.topRight, this.bottomRight, this.bottomLeft] }
 	draw(context, fillStyle, strokeStyle, lineWidth = 1) { 
 		context.fillStyle = fillStyle
 		context.strokeStyle = strokeStyle
@@ -122,25 +122,43 @@ class Rectangle {
 	}
 	isPointInside({ x, y }) {
 		const { left, right, top, bottom } = this
-		return x > left() && x < right() && y > top() && y < bottom()
+		return x > left && x < right && y > top && y < bottom
+	}
+	getClosestPoint({ x, y }) {
+		const { left, right, top, bottom } = this
+		const closestX = Math.max(left, Math.min(x, right))
+		const closestY = Math.max(top, Math.min(y, bottom))
+		return new Vector2(closestX, closestY)
+	}
+	getClosestCorner({ x, y }) {
+		const { left, right, top, bottom } = this
+		const closestX = x < this.position.x ? left : right
+		const closestY = y < this.position.y ? top : bottom
+		return new Vector2(closestX, closestY)
+	}
+	getFarthestCorner({ x, y }) {
+		const { left, right, top, bottom } = this
+		const farthestX = x > this.position.x ? left : right
+		const farthestY = y > this.position.y ? top : bottom
+		return new Vector2(farthestX, farthestY)
 	}
 }
 
 class Circle {
-	constructor(center, radius) { this.center = center; this.radius = radius }
+	constructor(position, radius) { this.position = position; this.radius = radius }
 	draw(context, fillStyle, strokeStyle, lineWidth = 1) {
 		context.fillStyle = fillStyle
 		context.strokeStyle = strokeStyle
 		context.lineWidth = lineWidth
 		context.beginPath()
-		context.arc(this.center.x, this.center.y, this.radius, 0, 2 * Math.PI)
+		context.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI)
 		context.fill()
 		context.stroke()
 	}
 	isPointInside({ x, y }) {
-		const { center, radius } = this
-		const dx = x - center.x
-		const dy = y - center.y
+		const { position, radius } = this
+		const dx = x - position.x
+		const dy = y - position.y
 		return dx ** 2 + dy ** 2 < radius * radius
 	}
 }
