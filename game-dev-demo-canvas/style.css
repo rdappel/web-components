@@ -22,7 +22,7 @@ body {
 	width: var(--demo-size);
 	height: var(--demo-size);
 	background-color: rgb(240, 240, 240);
-	margin: 50px;
+	margin: 150px 10px;
 	/* border-radius: 30px;
 	border: 2px solid black; */
 }

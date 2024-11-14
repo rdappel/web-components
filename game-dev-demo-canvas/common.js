@@ -20,9 +20,12 @@ class Vector2 {
 		context.beginPath()
 		context.moveTo(startPosition.x, startPosition.y)
 		context.lineTo(startPosition.x + x, startPosition.y + y) 
-		const headLength = 10
+		let headLength = 8
+		const headLengthSquared = headLength * headLength
+		if (this.lengthSquared() < headLengthSquared) headLength = this.length()
 		const angle = Math.atan2(y, x)
-		const piOver6 = Math.PI / 6
+		const piOver6 = Math.PI / 4
+		context.moveTo(startPosition.x + x, startPosition.y + y)
 		context.lineTo(
 			startPosition.x + x - headLength * Math.cos(angle - piOver6),
 			startPosition.y + y - headLength * Math.sin(angle - piOver6)
@@ -93,6 +96,33 @@ class LineSegment {
 		context.stroke()
 	}
 	toVector() { return this.end.subtract(this.start) }
+	getOverlap(line) {
+		const delta = 0.001
+		// check lines are parallel
+		const thisVector = this.toVector()
+		const lineVector = line.toVector()
+		const cross = thisVector.x * lineVector.y - thisVector.y * lineVector.x
+		if (Math.abs(cross) > delta) return null
+		
+		// check which point is on the other segment
+		const dsq = delta * delta
+		const isStartOnLine = line.getPointClosestTo(this.start).subtract(this.start).lengthSquared() < dsq
+		const isEndOnLine = line.getPointClosestTo(this.end).subtract(this.end).lengthSquared() < dsq
+		if (isStartOnLine && isEndOnLine) return this
+
+		// check which point on other line is on this segment
+		const isStartOnThis = this.getPointClosestTo(line.start).subtract(line.start).lengthSquared() < dsq
+		const isEndOnThis = this.getPointClosestTo(line.end).subtract(line.end).lengthSquared() < dsq
+		if (isStartOnThis && isEndOnThis) return line
+
+		if (!isStartOnLine && !isEndOnLine && !isStartOnThis && !isEndOnThis) return null
+
+		const p0 = isStartOnLine ? this.start : this.end
+		const p1 = isStartOnThis ? line.start : line.end
+		return new LineSegment(p0, p1)
+	}
+	isVertical() { return this.start.x === this.end.x }
+	isHorizontal() { return this.start.y === this.end.y }
 }
 
 class Rectangle {
@@ -122,7 +152,7 @@ class Rectangle {
 	}
 	isPointInside({ x, y }) {
 		const { left, right, top, bottom } = this
-		return x > left && x < right && y > top && y < bottom
+		return x >= left && x <= right && y >= top && y <= bottom
 	}
 	getClosestPoint({ x, y }) {
 		const { left, right, top, bottom } = this

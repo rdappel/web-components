@@ -36,7 +36,7 @@ window.customElements.define('circle-aabb-vr-sepaxis-canvas', class extends HTML
 		this.axisDistanceFromEdge = 24
 		
 		this.rectangle = new Rectangle(this.center, new Vector2(90, 90))
-		this.circle = new Circle(new Vector2(240, 75), 40)
+		this.circle = new Circle(new Vector2(240, 75), 36)
 
 		this.mouseOverObject = null
 		this.selectedObject = null
@@ -111,7 +111,6 @@ window.customElements.define('circle-aabb-vr-sepaxis-canvas', class extends HTML
 			this.selectedObject = this.mouseOverObject
 			const mousePosition = this.getMousePosition(event)
 			this.selectedOffset = this.selectedObject.position.subtract(mousePosition)
-
 		})
 		canvas.addEventListener('mouseup', () => this.selectedObject = null)
         canvas.addEventListener('mouseleave', () => this.selectedObject = null)
@@ -140,12 +139,14 @@ window.customElements.define('circle-aabb-vr-sepaxis-canvas', class extends HTML
 			rectangleCenterPoint.draw(context, rectangleColor, 'square', 1)
 			const rectangleXPointLeft = xAxisLine.getPointClosestTo(rectangle.bottomLeft)
 			const rectangleXPointRight = xAxisLine.getPointClosestTo(rectangle.bottomRight)
-			const rectangleXLine = new LineSegment(rectangleXPointLeft, rectangleXPointRight)
+			this.rectangleXLine = new LineSegment(rectangleXPointLeft, rectangleXPointRight)
 			const rectangleYPointLeft = yAxisLine.getPointClosestTo(rectangle.topLeft)
 			const rectangleYPointRight = yAxisLine.getPointClosestTo(rectangle.bottomRight)
-			const rectangleYLine = new LineSegment(rectangleYPointLeft, rectangleYPointRight)
-			rectangleXLine.draw(context, rectangleColor, 3)
-			rectangleYLine.draw(context, rectangleColor, 3)
+			this.rectangleYLine = new LineSegment(rectangleYPointLeft, rectangleYPointRight)
+			this.rectangleXLine.draw(context, rectangleColor, 3)
+			this.rectangleYLine.draw(context, rectangleColor, 3)
+
+			// rectangle voronoi region lines
 			rectangle.topEdge.extend(340).draw(context, rectangleColor50, 0.5)
 			rectangle.rightEdge.extend(340).draw(context, rectangleColor50, 0.5)
 			rectangle.bottomEdge.extend(340).draw(context, rectangleColor50, 0.5)
@@ -160,13 +161,18 @@ window.customElements.define('circle-aabb-vr-sepaxis-canvas', class extends HTML
 			circleCenterPoint.draw(context, circleColor, 'square', 1)
 			const circleXPointLeft = xAxisLine.getPointClosestTo(new Vector2(x - radius, y))
 			const circleXPointRight = xAxisLine.getPointClosestTo(new Vector2(x + radius, y))
-			const circleXLine = new LineSegment(circleXPointLeft, circleXPointRight)
+			this.circleXLine = new LineSegment(circleXPointLeft, circleXPointRight)
 			const circleYPointTop = yAxisLine.getPointClosestTo(new Vector2(x, y - radius))
 			const circleYPointBottom = yAxisLine.getPointClosestTo(new Vector2(x, y + radius))
-			const circleYLine = new LineSegment(circleYPointTop, circleYPointBottom)
-			circleXLine.draw(context, circleColor50, 5)
-			circleYLine.draw(context, circleColor50, 5)
+			this.circleYLine = new LineSegment(circleYPointTop, circleYPointBottom)
+			this.circleXLine.draw(context, circleColor50, 5)
+			this.circleYLine.draw(context, circleColor50, 5)
 		}
+
+
+		this.inVoronoiRegion = false
+		const displaceVectorOffset = 12
+		const displaceVectors = []
 
 		const isCenterInside = rectangle.isPointInside(circle.position)
 		if (!isCenterInside) {
@@ -176,43 +182,107 @@ window.customElements.define('circle-aabb-vr-sepaxis-canvas', class extends HTML
 
 			if (closestPoint.equals(closestCorner)) {
 				const centerToCornerLine = new LineSegment(circle.position, closestPoint)
-				centerToCornerLine.draw(context, axisLineColor50, 0.5)
-				const axisOffset = 60
-				const tempAxis = centerToCornerLine.extend(340)
-				const newAxisVectorNormal = tempAxis.end.subtract(tempAxis.start).normalize()
-				const isLeftUp = newAxisVectorNormal.left().y < 0
-				const newAxisOrthogonal = newAxisVectorNormal[isLeftUp ? 'left' : 'right']()
-				const offsetVector = newAxisOrthogonal.multiply(axisOffset)
-				const p0 = closestPoint.add(offsetVector)
-				const p1 = circle.position.add(offsetVector)
-				const newAxisLine = new LineSegment(p0, p1).extend(340)
-				newAxisLine.draw(context, axisLineColor50, 0.5)
+				if (!centerToCornerLine.isVertical() && !centerToCornerLine.isHorizontal()) {
+					this.inVoronoiRegion = true
 
-				// rectangle projection
-				const farthestCorner = rectangle.getFarthestCorner(circle.position)
-				const rP0 = newAxisLine.getPointClosestTo(closestCorner)
-				const rP1 = newAxisLine.getPointClosestTo(farthestCorner)
-				const rProjectedLine = new LineSegment(rP0, rP1)
-				rProjectedLine.draw(context, rectangleColor, 3)
-				const rLine1 = new LineSegment(closestCorner, rP0)
-				const rLine2 = new LineSegment(farthestCorner, rP1)
-				rLine1.draw(context, rectangleColor50, 0.5)
-				rLine2.draw(context, rectangleColor50, 0.5)
+					centerToCornerLine.draw(context, axisLineColor50, 0.5)
+					const axisOffset = 60
+					const tempAxis = centerToCornerLine.extend(340)
+					const newAxisVectorNormal = tempAxis.end.subtract(tempAxis.start).normalize()
+					const isLeftUp = newAxisVectorNormal.left().y < 0
+					const newAxisOrthogonal = newAxisVectorNormal[isLeftUp ? 'left' : 'right']()
+					const offsetVector = newAxisOrthogonal.multiply(axisOffset)
+					const p0 = closestPoint.add(offsetVector)
+					const p1 = circle.position.add(offsetVector)
+					const newAxisLine = new LineSegment(p0, p1).extend(340)
+					newAxisLine.draw(context, axisLineColor50, 0.5)
 
-				// circle projection
-				const normalOffset = newAxisVectorNormal.multiply(circle.radius)
-				const farthestIntersection = circle.position.subtract(normalOffset)
-				const closestIntersection = circle.position.add(normalOffset)
-				const cP0 = newAxisLine.getPointClosestTo(farthestIntersection)
-				const cP1 = newAxisLine.getPointClosestTo(closestIntersection)
-				const cProjectedLine = new LineSegment(cP0, cP1)
-				cProjectedLine.draw(context, circleColor50, 5)
-				const cLine1 = new LineSegment(farthestIntersection, cP0)
-				const cLine2 = new LineSegment(closestIntersection, cP1)
-				cLine1.draw(context, circleColor50, 0.5)
-				cLine2.draw(context, circleColor50, 0.5)
+					// rectangle projection
+					const farthestCorner = rectangle.getFarthestCorner(circle.position)
+					const rP0 = newAxisLine.getPointClosestTo(closestCorner)
+					const rP1 = newAxisLine.getPointClosestTo(farthestCorner)
+					const rProjectedLine = new LineSegment(rP0, rP1)
+					rProjectedLine.draw(context, rectangleColor, 3)
+					this.rectangleLine1 = new LineSegment(closestCorner, rP0)
+					this.rectangleLine2 = new LineSegment(farthestCorner, rP1)
+					this.rectangleLine1.draw(context, rectangleColor50, 0.5)
+					this.rectangleLine2.draw(context, rectangleColor50, 0.5)
+
+					// circle projection
+					const normalOffset = newAxisVectorNormal.multiply(circle.radius)
+					const farthestIntersection = circle.position.subtract(normalOffset)
+					const closestIntersection = circle.position.add(normalOffset)
+					const cP0 = newAxisLine.getPointClosestTo(farthestIntersection)
+					const cP1 = newAxisLine.getPointClosestTo(closestIntersection)
+					const cProjectedLine = new LineSegment(cP0, cP1)
+					cProjectedLine.draw(context, circleColor50, 5)
+					this.circleLine1 = new LineSegment(farthestIntersection, cP0)
+					this.circleLine2 = new LineSegment(closestIntersection, cP1)
+					this.circleLine1.draw(context, circleColor50, 0.5)
+					this.circleLine2.draw(context, circleColor50, 0.5)
+
+					// overlap on axis
+					const axisOverlapLine = rProjectedLine.getOverlap(cProjectedLine)
+					if (axisOverlapLine) {
+						const vector = axisOverlapLine.toVector().multiply(-1)
+						const offset = vector.x > 0 ? vector.left() : vector.right()
+						const start = offset.normalize()
+							.multiply(-displaceVectorOffset).add(axisOverlapLine.end)
+						//vector.draw(context, start, axisLineColor, 3)
+						const lengthSquared = vector.lengthSquared()
+						displaceVectors.push({ vector, start, lengthSquared })
+					}
+				}
 			}
 		}
-		
+
+		// overlap on x and y axis
+		const xOverlapLine = this.rectangleXLine.getOverlap(this.circleXLine)
+		if (xOverlapLine) {
+			const { position: { x }, radius } = circle
+			const p0 = xOverlapLine.start
+			const p1 = xOverlapLine.end
+			const line = p0.x < p1.x ? xOverlapLine : new LineSegment(p1, p0)
+			const circleXisLeft = circle.position.x < rectangle.position.x
+			const enclosed = x - radius >= rectangle.left && x + radius <= rectangle.right
+			if (enclosed && circleXisLeft) line.start.x = rectangle.left
+			if (enclosed && !circleXisLeft) line.end.x = rectangle.right
+			const vector = line.toVector()
+			if (circleXisLeft) vector.x *= -1
+			const position = vector.x > 0 ? line.start : line.end
+			const start = (new Vector2(0, displaceVectorOffset)).add(position)
+			const lengthSquared = vector.lengthSquared()
+			displaceVectors.push({ vector, start, lengthSquared })
+		}
+		const yOverlapLine = this.rectangleYLine.getOverlap(this.circleYLine)
+		if (yOverlapLine) {
+			const p0 = yOverlapLine.start
+			const p1 = yOverlapLine.end
+			const line = p0.y < p1.y ? yOverlapLine : new LineSegment(p1, p0)
+			const circleYisUp = circle.position.y < rectangle.position.y
+			const enclosed = circle.position.y - circle.radius >= rectangle.top
+				&& circle.position.y + circle.radius <= rectangle.bottom
+			if (enclosed && circleYisUp) line.start.y = rectangle.top
+			if (enclosed && !circleYisUp) line.end.y = rectangle.bottom
+			const vector = line.toVector()
+			if (circleYisUp) vector.y *= -1
+			const position = vector.y > 0 ? line.start : line.end
+			const start = (new Vector2(-displaceVectorOffset, 0)).add(position)
+			const lengthSquared = vector.lengthSquared()
+			displaceVectors.push({ vector, start, lengthSquared })
+		}
+
+		const l = displaceVectors.length
+		const hasDisplacement = ((this.inVoronoiRegion && l === 3)
+			|| !this.inVoronoiRegion && l === 2)
+
+		displaceVectors.sort((a, b) => a.lengthSquared - b.lengthSquared)
+			.forEach(({ vector, start }, index) => {
+				if (!vector) return
+				const color = (index === 0 && hasDisplacement) ? 'purple'
+					: setColorAlpha(this.defaultVectorColor, 0.3)
+				vector.draw(context, start, color, 3)
+			})
+
 	}
 })
