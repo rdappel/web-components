@@ -22,7 +22,7 @@ body {
 	width: var(--demo-size);
 	height: var(--demo-size);
 	background-color: rgb(240, 240, 240);
-	margin: 150px 10px;
+	margin: 20px;
 	/* border-radius: 30px;
 	border: 2px solid black; */
 }
@@ -40,4 +40,16 @@ a:hover {
 
 a:active {
 	color: rgb(34, 34, 136);
+}
+
+button {
+	display: block;
+	margin: 10px 20px;
+	padding: 4px;
+	border-radius: 5px;
+	cursor: pointer;
+}
+
+button.selected {
+	background-color: rgb(188, 188, 241);
 }

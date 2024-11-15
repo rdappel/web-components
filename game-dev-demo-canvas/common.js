@@ -80,6 +80,7 @@ class LineSegment {
 		if (t > 1) return this.end
 		return this.start.add(startToEnd.multiply(t))
 	}
+	center() { return this.start.add(this.end).divide(2) }
 	extend(startDistance, endDistance = startDistance) {
 		const startToEnd = this.end.subtract(this.start)
 		const start = this.start.subtract(startToEnd.normalize().multiply(startDistance))
@@ -123,6 +124,12 @@ class LineSegment {
 	}
 	isVertical() { return this.start.x === this.end.x }
 	isHorizontal() { return this.start.y === this.end.y }
+	reverse() { 
+		const temp = this.start
+		this.start = this.end
+		this.end = temp
+	}
+
 }
 
 class Rectangle {
@@ -190,6 +197,13 @@ class Circle {
 		const dx = x - position.x
 		const dy = y - position.y
 		return dx ** 2 + dy ** 2 < radius * radius
+	}
+	getClosestPointTo({ x, y }) {
+		const { position, radius } = this
+		const angle = Math.atan2(y - position.y, x - position.x)
+		const closestX = position.x + Math.cos(angle) * radius
+		const closestY = position.y + Math.sin(angle) * radius
+		return new Vector2(closestX, closestY)
 	}
 }
 

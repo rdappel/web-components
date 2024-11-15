@@ -4,12 +4,13 @@ import {
 	Point,
 	LineSegment,
 	setColorAlpha,
-} from '../common.js'
+} from './common.js'
 
 window.customElements.define('particle-collision-canvas', class extends HTMLElement {
 
-    constructor() {
-        super()
+    constructor() { super() }
+
+    connectedCallback() {
         this.root = this.attachShadow({ mode: 'open' })
 
         this.canvas = document.createElement('canvas')
@@ -38,9 +39,7 @@ window.customElements.define('particle-collision-canvas', class extends HTMLElem
 
 		this.draw = this.draw.bind(this)
         this.animationLoop = this.animationLoop.bind(this)
-    }
 
-    connectedCallback() {
 		const { canvas, scale } = this
 
 		const boundingRectangle = this.getBoundingClientRect()

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<script src="particle-collision-canvas.js" type="module"></script>
+	<script src="vector-projection-canvas.js" type="module"></script>
+	<script src="voronoi-triangle-canvas.js" type="module"></script>
+	<script src="aabb-projection-canvas.js" type="module"></script>
+	<script src="circle-aabb-naive-sepaxis-canvas.js" type="module"></script>
+	<script src="circle-aabb-vr-sepaxis-canvas.js" type="module"></script>
+	<script src="aabb-aabb-sepaxis-canvas.js" type="module"></script>
+	<script src="aabb-tri-sepaxis-canvas.js" type="module"></script>
+	<script src="aabb-concave-sepaxis-canvas.js" type="module"></script>
+	<script src="aabb-convex-sepaxis-canvas.js" type="module"></script>
+	<script src="cells-touched-canvas.js" type="module"></script>
+	<link rel="icon" href="favicon.svg" type="image/x-icon">
+	<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+	<div id="demo-container"></div>
+	<button data-demo="particle-collision-canvas">Particle Collision</button>
+	<button data-demo="vector-projection-canvas">Vector Projection</button>
+	<button data-demo="voronoi-triangle-canvas">Voronoi Triangle</button>
+	<button data-demo="aabb-projection-canvas">AABB Projection</button>
+	<button data-demo="circle-aabb-naive-sepaxis-canvas">Circle AABB Naive Sep Axis</button>
+	<button data-demo="circle-aabb-vr-sepaxis-canvas">Circle AABB VR Sep Axis</button>
+	<button data-demo="aabb-aabb-sepaxis-canvas">AABB AABB Sep Axis</button>
+	<button data-demo="aabb-tri-sepaxis-canvas">AABB Tri Sep Axis</button>
+	<button data-demo="aabb-concave-sepaxis-canvas">AABB Concave Sep Axis</button>
+	<button data-demo="aabb-convex-sepaxis-canvas">AABB Convex Sep Axis</button>
+	<button data-demo="cells-touched-canvas">Cells Touched</button>
+</body>
+
+<script>
+	const container = document.querySelector('#demo-container')
+	const buttons = document.querySelectorAll('button')
+
+	const showDemo = name => {
+		if (!name) return
+		container.innerHTML = ''
+		const demo = document.createElement(name)
+		demo.classList.add('demo')
+		demo.setAttribute('id', name)
+		container.appendChild(demo)
+		buttons.forEach(button => {
+			if (button.getAttribute('data-demo') === name) {
+				button.classList.add('selected')
+			} else {
+				button.classList.remove('selected')
+			}
+		})
+	}
+
+	buttons.forEach(button => {
+		button.addEventListener('click', () => {
+			window.location.hash = button.getAttribute('data-demo')
+		})
+	})
+
+	window.addEventListener('hashchange', () => {
+		showDemo(window.location.hash.slice(1))
+	})
+
+	showDemo(window.location.hash.slice(1))
+
+	if (!window.location.hash) {
+		window.location.hash = 'particle-collision-canvas'
+	}
+</script>
+
+</html>

@@ -7,12 +7,15 @@ import {
 	Rectangle,
 	Triangle,
 	Polygon
-} from '../common.js'
+} from './common.js'
 
 window.customElements.define('aabb-tri-sepaxis-canvas', class extends HTMLElement {
 
     constructor() {
         super()
+    }
+
+    connectedCallback() {
         this.root = this.attachShadow({ mode: 'open' })
 
         this.canvas = document.createElement('canvas')
@@ -35,20 +38,13 @@ window.customElements.define('aabb-tri-sepaxis-canvas', class extends HTMLElemen
 
 		this.axisDistanceFromEdge = 24
 
-		this.triangle = new Triangle(new Vector2(135, 185),
-			new Vector2(135, 265), new Vector2(190, 265))
-		this.rectangle = new Rectangle(new Vector2(260, 140),
-			new Vector2(70, 45))
-
 		this.mouseOverObject = null
 		this.selectedObject = null
 		this.selectedOffset = null
 
 		this.draw = this.draw.bind(this)
         this.animationLoop = this.animationLoop.bind(this)
-    }
 
-    connectedCallback() {
 		const { canvas, scale } = this
 
 		const boundingRectangle = this.getBoundingClientRect()
@@ -86,8 +82,14 @@ window.customElements.define('aabb-tri-sepaxis-canvas', class extends HTMLElemen
 			new Vector2(axisDistanceFromEdge, defaultSize.y)
 		)
 
-		const hypotenuseLeft = new LineSegment(triangle.a, triangle.c).toVector().left()
-		const axisP0 = triangle.a.subtract(new Vector2(0, 100))
+		this.triangle = new Triangle(new Vector2(135, 185),
+			new Vector2(135, 265), new Vector2(190, 265))
+		this.rectangle = new Rectangle(new Vector2(260, 140),
+			new Vector2(70, 45))
+
+		const { a, c } = this.triangle
+		const hypotenuseLeft = new LineSegment(a, c).toVector().left()
+		const axisP0 = a.subtract(new Vector2(0, 100))
 		const axisP1 = axisP0.add(hypotenuseLeft)
 		this.triangleAxisLine = (new LineSegment(axisP0, axisP1)).extend(340)
 	}
@@ -140,6 +142,9 @@ window.customElements.define('aabb-tri-sepaxis-canvas', class extends HTMLElemen
 		yAxisLine.draw(context, axisLineColor50)
 		triangleAxisLine.draw(context, axisLineColor50)
 
+		const displaceVectorOffset = 12
+		const displaceVectors = []
+
 		context.lineCap = 'round'
 
 		{ // triangle
@@ -176,8 +181,8 @@ window.customElements.define('aabb-tri-sepaxis-canvas', class extends HTMLElemen
 		{ // rectangle
 			rectangle.draw(context, rectangleColor50, rectangleColor)
 			const rectangleCenterPoint = new Point(rectangle.position)
-
 			rectangleCenterPoint.draw(context, rectangleColor, 'square', 1)
+
 			const rectangleXPointLeft = xAxisLine.getPointClosestTo(rectangle.bottomLeft)
 			const rectangleXPointRight = xAxisLine.getPointClosestTo(rectangle.bottomRight)
 			const xLine0 = new LineSegment(rectangleXPointLeft, rectangle.bottomLeft)
@@ -187,11 +192,11 @@ window.customElements.define('aabb-tri-sepaxis-canvas', class extends HTMLElemen
 			xLine0.draw(context, rectangleColor50, 0.5)
 			xLine1.draw(context, rectangleColor50, 0.5)
 
-			const rectangleYPointLeft = yAxisLine.getPointClosestTo(rectangle.topLeft)
-			const rectangleYPointRight = yAxisLine.getPointClosestTo(rectangle.bottomRight)
-			const yLine0 = new LineSegment(rectangleYPointLeft, rectangle.topLeft)
-			const yLine1 = new LineSegment(rectangleYPointRight, rectangle.bottomRight)
-			this.rectangleYLine = new LineSegment(rectangleYPointLeft, rectangleYPointRight)
+			const rectangleYPointTop = yAxisLine.getPointClosestTo(rectangle.topLeft)
+			const rectangleYPointBottom = yAxisLine.getPointClosestTo(rectangle.bottomLeft)
+			const yLine0 = new LineSegment(rectangleYPointTop, rectangle.topLeft)
+			const yLine1 = new LineSegment(rectangleYPointBottom, rectangle.bottomLeft)
+			this.rectangleYLine = new LineSegment(rectangleYPointTop, rectangleYPointBottom)
 			this.rectangleYLine.draw(context, rectangleColor50, 5)
 			yLine0.draw(context, rectangleColor50, 0.5)
 			yLine1.draw(context, rectangleColor50, 0.5)
@@ -205,5 +210,60 @@ window.customElements.define('aabb-tri-sepaxis-canvas', class extends HTMLElemen
 			hLine0.draw(context, rectangleColor50, 0.5)
 			hLine1.draw(context, rectangleColor50, 0.5)
 		}
+
+		// start finding separating axis
+
+		const getDisplacementVector = (rectangleLine, triangleLine, swapArrow) => {
+			const axisOverlapLine = rectangleLine.getOverlap(triangleLine)
+			if (!axisOverlapLine) return null
+			const tCenter = triangleLine.center()
+			const rCenter = rectangleLine.center()
+			const p0 = axisOverlapLine.start
+			const p1 = axisOverlapLine.end
+			const line = p0.x < p1.x || p0.y > p1.y
+				? axisOverlapLine : new LineSegment(p1, p0)
+
+			const triangleIsLeft = tCenter.x < rCenter.x || tCenter.y > rCenter.y
+
+			const triangleIsSmaller = triangleLine.toVector().lengthSquared()
+				< rectangleLine.toVector().lengthSquared()
+
+			const enclosed = triangleIsSmaller
+			? (triangleLine.start.x > rectangleLine.start.x && triangleLine.end.x < rectangleLine.end.x)
+				|| (triangleLine.start.y > rectangleLine.start.y && triangleLine.end.y < rectangleLine.end.y)
+			: triangleLine.start.x < rectangleLine.start.x && triangleLine.end.x > rectangleLine.end.x
+				|| (triangleLine.start.y < rectangleLine.start.y && triangleLine.end.y > rectangleLine.end.y)
+
+			if (enclosed) {
+				if (triangleIsSmaller && triangleIsLeft) line.start = rectangleLine.start
+				if (triangleIsSmaller && !triangleIsLeft) line.end = rectangleLine.end
+				if (!triangleIsSmaller && triangleIsLeft) line.end = triangleLine.start
+				if (!triangleIsSmaller && !triangleIsLeft) line.start = triangleLine.end
+			}
+
+			const vector = line.toVector().multiply(triangleIsLeft ? 1 : -1)
+			const position = vector.x > 0 || vector.y < 0 ? line.start : line.end
+			const normal = vector[triangleIsLeft ? 'left' : 'right']().normalize()
+			const size = (swapArrow ? -1 : 1) * displaceVectorOffset
+			const start = (normal.multiply(size)).add(position)
+			const lengthSquared = vector.lengthSquared()
+			return { vector, start, lengthSquared }
+		}
+
+		displaceVectors.push(getDisplacementVector(this.rectangleXLine, this.triangleXLine, false))
+		displaceVectors.push(getDisplacementVector(this.rectangleYLine, this.triangleYLine, true))
+		displaceVectors.push(getDisplacementVector(this.rectangleHLine, this.triangleHLine, true))
+
+		
+		const vectors = displaceVectors.filter(Boolean)
+		const hasDisplacement = vectors.length === 3
+
+		vectors.sort((a, b) => a.lengthSquared - b.lengthSquared)
+			.forEach(({ vector, start }, index) => {
+				if (!vector) return
+				const color = (index === 0 && hasDisplacement) ? 'purple'
+					: setColorAlpha(this.defaultVectorColor, 0.3)
+				vector.draw(context, start, color, 3)
+			})
 	}
 })
