@@ -7,7 +7,7 @@ import {
 	Rectangle,
 	Triangle,
 	Polygon
-} from '../common.js'
+} from './common.js'
 
 window.customElements.define('sepaxis-canvas', class extends HTMLElement {
 

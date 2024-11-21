@@ -303,9 +303,53 @@ class Polygon {
 	getPoints() { return this.points }
 }
 
+class Grid {
+	constructor(cellSize, xOffset = 0, yOffset = 0) {
+		this.cellSize = cellSize; 
+		this.xOffset = xOffset;
+		this.yOffset = yOffset
+	}
+
+	draw(context, color, lineWidth = 1) {
+		context.strokeStyle = color
+		context.lineWidth = lineWidth
+		const { cellSize, xOffset, yOffset } = this
+		const { width, height } = context.canvas
+		const numHorizontalLines = Math.floor(width / cellSize) + 1
+		const numVerticalLines = Math.floor(height / cellSize) + 1
+
+		for (let i = 0; i < numHorizontalLines; i++) {
+			const x = i * cellSize + xOffset
+			context.beginPath()
+			context.moveTo(x, 0)
+			context.lineTo(x, height)
+			context.stroke()
+		}
+
+		for (let i = 0; i < numVerticalLines; i++) {
+			const y = i * cellSize + yOffset
+			context.beginPath()
+			context.moveTo(0, y)
+			context.lineTo(width, y)
+			context.stroke()
+		}
+	}
+}
+
 function setColorAlpha(color, alpha) {
 	const [r, g, b] = color.match(/\d+/g)
 	return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-export { Vector2, Point, LineSegment, Rectangle, Circle, Triangle, Polygon, setColorAlpha }
+
+export {
+	Vector2,
+	Point,
+	LineSegment,
+	Rectangle,
+	Circle,
+	Triangle,
+	Polygon,
+	Grid,
+	setColorAlpha,
+}

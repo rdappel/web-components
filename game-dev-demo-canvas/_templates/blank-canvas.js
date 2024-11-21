@@ -7,7 +7,7 @@ import {
 	Rectangle,
 	Triangle,
 	Polygon
-} from '../common.js'
+} from './common.js'
 
 window.customElements.define('TODO-ENTER_NAME_OF_ELEMENT', class extends HTMLElement {
 

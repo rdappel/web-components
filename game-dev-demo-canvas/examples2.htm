@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<script src="___ra-vectors.js" type="module"></script>
+	<link rel="icon" href="favicon.svg" type="image/x-icon">
+	<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+	<div id="demo-container"></div>
+	<button data-demo="ra-vectors">Vectors</button>
+</body>
+
+<script>
+	const container = document.querySelector('#demo-container')
+	const buttons = document.querySelectorAll('button')
+
+	const showDemo = name => {
+		if (!name) return
+		container.innerHTML = ''
+		const demo = document.createElement(name)
+		demo.classList.add('demo')
+		demo.setAttribute('id', name)
+		container.appendChild(demo)
+		buttons.forEach(button => {
+			if (button.getAttribute('data-demo') === name) {
+				button.classList.add('selected')
+			} else {
+				button.classList.remove('selected')
+			}
+		})
+	}
+
+	buttons.forEach(button => {
+		button.addEventListener('click', () => {
+			window.location.hash = button.getAttribute('data-demo')
+		})
+	})
+
+	window.addEventListener('hashchange', () => {
+		showDemo(window.location.hash.slice(1))
+	})
+
+	showDemo(window.location.hash.slice(1))
+
+	if (!window.location.hash) {
+		window.location.hash = 'ra-vectors'
+	}
+</script>
+
+</html>
